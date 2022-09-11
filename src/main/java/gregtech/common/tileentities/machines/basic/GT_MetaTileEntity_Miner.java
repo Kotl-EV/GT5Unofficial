@@ -135,7 +135,9 @@ public class GT_MetaTileEntity_Miner extends GT_MetaTileEntity_BasicDrillerBase 
     }
 
     public void mineBlock(IGregTechTileEntity aBaseMetaTileEntity, int x, int y, int z) {
-    	if (!GT_Utility.eraseBlockByFakePlayer(getFakePlayer(aBaseMetaTileEntity), aBaseMetaTileEntity.getXCoord() + x, aBaseMetaTileEntity.getYCoord() + y, aBaseMetaTileEntity.getZCoord() + z, true));
+    	if (!GT_Utility.eraseBlockByFakePlayer(getFakePlayer(aBaseMetaTileEntity), aBaseMetaTileEntity.getXCoord() + x, aBaseMetaTileEntity.getYCoord() + y, aBaseMetaTileEntity.getZCoord() + z, true))
+            //todo daniorio
+            return;
         ArrayList<ItemStack> drops = getBlockDrops(aBaseMetaTileEntity.getBlockOffset(x, y, z), aBaseMetaTileEntity.getXCoord() + x, aBaseMetaTileEntity.getYCoord() + y, aBaseMetaTileEntity.getZCoord() + z);
         if (drops.size() > 0)
             mOutputItems[0] = drops.get(0);

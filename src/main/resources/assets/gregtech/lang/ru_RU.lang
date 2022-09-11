@@ -47382,10 +47382,11 @@ tc.aspect.nebrisum=Читерство, Рейдерство
 tc.aspect.radio=Радиация
 tc.aspect.strontio=Тупость, Некомпетентность
 
-gt.message.integrated.circuit=§7Конфигурация микросхемы: §a%s
-gt.message.cover.normal=§7Нормальный
-gt.message.cover.inverted=§7Инвертированный
-gt.message.cover.no.work=§7Вообще никакой работы
+
+gt.message.integrated.circuit=§0Конфигурация микросхемы: §a%s
+gt.message.cover.normal=§0Включать по сигналу редстоуна
+gt.message.cover.inverted=§0Выключать по сигналу редстоуна
+gt.message.cover.no.work=§0Машина всегда выключена
 
 
 

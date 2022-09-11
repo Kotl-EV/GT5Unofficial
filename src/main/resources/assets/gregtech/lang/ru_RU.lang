@@ -1,4 +1,4 @@
-item.gregtech:modulararmor_helmet.name=Базовый шлем модульной брони
+﻿item.gregtech:modulararmor_helmet.name=Базовый шлем модульной брони
 item.gregtech:modulararmor_chestplate.name=Базовый нагрудник модульной брони
 item.gregtech:modulararmor_leggings.name=Базовые штаны модульной брони
 item.gregtech:modulararmor_boots.name=Базовые ботинки модульной брони
@@ -580,6 +580,7 @@ for.bees.species.iridium=Иридий
 for.bees.species.uranium=Уран
 for.bees.species.plutonium=Плутоний
 for.bees.species.naquadah=Наквадах
+<<<<<<< Updated upstream
 
 
 Interaction_DESCRIPTION_Index_001=Вставляется в соседний слот #
@@ -47390,3 +47391,5 @@ gt.message.cover.no.work=Машина всегда выключена
 
 
 
+=======
+>>>>>>> Stashed changes

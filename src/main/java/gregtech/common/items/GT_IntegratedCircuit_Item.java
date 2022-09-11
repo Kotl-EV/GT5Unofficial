@@ -14,9 +14,12 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+<<<<<<< Updated upstream
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
+=======
+>>>>>>> Stashed changes
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
 
@@ -110,9 +113,13 @@ public class GT_IntegratedCircuit_Item extends GT_Generic_Item {
         if (tConfig > 24)
             tConfig -= 24;
         aStack.setItemDamage(tConfig);
+<<<<<<< Updated upstream
         //TODO Kotl replace code start
         aPlayer.addChatComponentMessage(new ChatComponentTranslation("gt.message.integrated.circuit", tConfig));
         //TODO Kotl replace code end
+=======
+        GT_Utility.sendChatToPlayer(aPlayer, "Integrated Circuit config is: " + tConfig);
+>>>>>>> Stashed changes
         return super.onItemRightClick(aStack, aWorld, aPlayer);
     }
 

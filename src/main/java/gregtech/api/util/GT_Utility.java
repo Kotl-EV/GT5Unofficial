@@ -48,6 +48,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.AxisAlignedBB;
@@ -58,6 +59,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.UsernameCache;
 import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.common.util.FakePlayerFactory;
@@ -1890,10 +1892,39 @@ public class GT_Utility {
 
     public static FakePlayer getFakePlayer(IGregTechTileEntity aBaseMetaTileEntity) {
     	if (aBaseMetaTileEntity.getWorld() instanceof WorldServer) {
-    		return FakePlayerFactory.get((WorldServer) aBaseMetaTileEntity.getWorld(), new GameProfile(null, aBaseMetaTileEntity.getOwnerName()));
+            //todo daniorio
+            UUID uuid = getUUID(aBaseMetaTileEntity.getOwnerName()).orElse(null);
+    		return FakePlayerFactory.get((WorldServer) aBaseMetaTileEntity.getWorld(), new GameProfile(uuid, aBaseMetaTileEntity.getOwnerName()));
     	}
     	return null;
     }
+
+    //todo daniorio
+    public static Optional<EntityPlayerMP> getOnlinePlayer(String name) {
+        if (name == null) return Optional.empty();
+        for (EntityPlayerMP p : getOnlinePlayers()) {
+            if (p.getCommandSenderName().equals(name))
+                return Optional.of(p);
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<UUID> getUUID(String username) {
+        if (username == null) return Optional.empty();
+        Optional<EntityPlayerMP> p = getOnlinePlayer(username);
+        if (p.isPresent())
+            return Optional.of(p.get().getPersistentID());
+        for (Map.Entry<UUID, String> entry : UsernameCache.getMap().entrySet()) {
+            if (entry.getValue().equals(username))
+                return Optional.of(entry.getKey());
+        }
+        return Optional.empty();
+    }
+
+    public static List<EntityPlayerMP> getOnlinePlayers() {
+        return MinecraftServer.getServer().getConfigurationManager().playerEntityList;
+    }
+    //
 
     public static boolean eraseBlockByFakePlayer(FakePlayer aPlayer, int aX, int aY, int aZ, boolean isSimulate) {
     	if (aPlayer == null) return false;

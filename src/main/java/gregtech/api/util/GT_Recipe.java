@@ -2,23 +2,46 @@ package gregtech.api.util;
 
 import codechicken.nei.PositionedStack;
 import gregtech.api.GregTech_API;
-import gregtech.api.enums.*;
+import gregtech.api.enums.Dyes;
+import gregtech.api.enums.ItemList;
+import gregtech.api.enums.Materials;
+import gregtech.api.enums.OrePrefixes;
+import gregtech.api.enums.SubTag;
 import gregtech.api.interfaces.tileentity.IGregTechTileEntity;
 import gregtech.api.interfaces.tileentity.IHasWorldObjectAndCoords;
 import gregtech.api.items.GT_MetaGenerated_Tool;
-import gregtech.api.objects.*;
+import gregtech.api.objects.GT_FluidStack;
+import gregtech.api.objects.GT_ItemStack;
+import gregtech.api.objects.ItemData;
+import gregtech.api.objects.MaterialStack;
 import gregtech.common.config.GT_DebugConfig;
 import gregtech.nei.GT_NEI_DefaultHandler.FixedPositionedStack;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntityFurnace;
-import net.minecraftforge.fluids.*;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidContainerRegistry;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.IFluidContainerItem;
 
-import java.util.*;
-
-import static gregtech.api.enums.GT_Values.*;
+import static gregtech.api.enums.GT_Values.D1;
+import static gregtech.api.enums.GT_Values.D2;
+import static gregtech.api.enums.GT_Values.D3;
+import static gregtech.api.enums.GT_Values.E;
+import static gregtech.api.enums.GT_Values.L;
+import static gregtech.api.enums.GT_Values.RA;
+import static gregtech.api.enums.GT_Values.RES_PATH_GUI;
+import static gregtech.api.enums.GT_Values.W;
 
 /**
  * NEVER INCLUDE THIS FILE IN YOUR MOD!!!
@@ -566,7 +589,7 @@ public class GT_Recipe implements Comparable<GT_Recipe> {
         public static final GT_Recipe_Map sPyrolyseRecipes = new GT_Recipe_Map(new HashSet<GT_Recipe>(50), "gt.recipe.pyro", "Pyrolyse Oven", null, RES_PATH_GUI + "basicmachines/Default", 2, 1, 1, 0, 1, E, 1, E, true, true);
         public static final GT_Recipe_Map sWiremillRecipes = new GT_Recipe_Map(new HashSet<GT_Recipe>(50), "gt.recipe.wiremill", "Wiremill", null, RES_PATH_GUI + "basicmachines/Wiremill", 1, 1, 1, 0, 1, E, 1, E, true, true);
         public static final GT_Recipe_Map sBenderRecipes = new GT_Recipe_Map(new HashSet<GT_Recipe>(400), "gt.recipe.metalbender", "Metal Bender", null, RES_PATH_GUI + "basicmachines/Bender", 2, 1, 2, 0, 1, E, 1, E, true, true);
-        public static final GT_Recipe_Map sAlloySmelterRecipes = new GT_Recipe_Map(new HashSet<GT_Recipe>(3000), "gt.recipe.alloysmelter", "Alloy Smelter", null, RES_PATH_GUI + "basicmachines/AlloySmelter", 2, 1, 2, 0, 1, E, 1, E, true, true);
+        public static final GT_Recipe_Map sAlloySmelterRecipes = new GT_Recipe_Map(new HashSet<>(3000), "gt.recipe.alloysmelter", "Alloy Smelter", null, RES_PATH_GUI + "basicmachines/AlloySmelter", 6, 1, 2, 0, 1, E, 1, E, true, true);
         public static final GT_Recipe_Map sAssemblerRecipes = new GT_Recipe_Map_Assembler(new HashSet<GT_Recipe>(300), "gt.recipe.assembler", "Assembler", null, RES_PATH_GUI + "basicmachines/Assembler", 6, 1, 1, 0, 1, E, 1, E, true, true);
         public static final GT_Recipe_Map sCircuitAssemblerRecipes = new GT_Recipe_Map_Assembler(new HashSet<GT_Recipe>(300), "gt.recipe.circuitassembler", "Circuit Assembler", null, RES_PATH_GUI + "basicmachines/CircuitAssembler", 6, 1, 1, 0, 1, E, 1, E, true, true);
         public static final GT_Recipe_Map sCannerRecipes = new GT_Recipe_Map(new HashSet<GT_Recipe>(300), "gt.recipe.canner", "Canning Machine", null, RES_PATH_GUI + "basicmachines/Canner", 2, 2, 1, 0, 1, E, 1, E, true, true);
@@ -1358,9 +1381,6 @@ public class GT_Recipe implements Comparable<GT_Recipe> {
         }
     }
 
-    /**
-     * Special Class for Forming Press handling.
-     */
     public static class GT_Recipe_Map_FormingPress extends GT_Recipe_Map {
         public GT_Recipe_Map_FormingPress(Collection<GT_Recipe> aRecipeList, String aUnlocalizedName, String aLocalName, String aNEIName, String aNEIGUIPath, int aUsualInputCount, int aUsualOutputCount, int aMinimalInputItems, int aMinimalInputFluids, int aAmperage, String aNEISpecialValuePre, int aNEISpecialValueMultiplier, String aNEISpecialValuePost, boolean aShowVoltageAmperageInNEI, boolean aNEIAllowed) {
             super(aRecipeList, aUnlocalizedName, aLocalName, aNEIName, aNEIGUIPath, aUsualInputCount, aUsualOutputCount, aMinimalInputItems, aMinimalInputFluids, aAmperage, aNEISpecialValuePre, aNEISpecialValueMultiplier, aNEISpecialValuePost, aShowVoltageAmperageInNEI, aNEIAllowed);
@@ -1369,25 +1389,10 @@ public class GT_Recipe implements Comparable<GT_Recipe> {
         @Override
         public GT_Recipe findRecipe(IHasWorldObjectAndCoords aTileEntity, GT_Recipe aRecipe, boolean aNotUnificated, long aVoltage, FluidStack[] aFluids, ItemStack aSpecialSlot, ItemStack... aInputs) {
             GT_Recipe rRecipe = super.findRecipe(aTileEntity, aRecipe, aNotUnificated, aVoltage, aFluids, aSpecialSlot, aInputs);
-            if (aInputs == null || aInputs.length < 2 || aInputs[0] == null || aInputs[1] == null || !GregTech_API.sPostloadFinished)
+            if (aInputs == null || aInputs.length < 2 || !GregTech_API.sPostloadFinished)
                 return rRecipe;
-            if (rRecipe == null) {
-                if (ItemList.Shape_Mold_Name.isStackEqual(aInputs[0], false, true)) {
-                    ItemStack tOutput = GT_Utility.copyAmount(1, aInputs[1]);
-                    tOutput.setStackDisplayName(aInputs[0].getDisplayName());
-                    rRecipe = new GT_Recipe(false, new ItemStack[]{ItemList.Shape_Mold_Name.get(0), GT_Utility.copyAmount(1, aInputs[1])}, new ItemStack[]{tOutput}, null, null, null, null, 128, 8, 0);
-                    rRecipe.mCanBeBuffered = false;
-                    return rRecipe;
-                }
-                if (ItemList.Shape_Mold_Name.isStackEqual(aInputs[1], false, true)) {
-                    ItemStack tOutput = GT_Utility.copyAmount(1, aInputs[0]);
-                    tOutput.setStackDisplayName(aInputs[1].getDisplayName());
-                    rRecipe = new GT_Recipe(false, new ItemStack[]{ItemList.Shape_Mold_Name.get(0), GT_Utility.copyAmount(1, aInputs[0])}, new ItemStack[]{tOutput}, null, null, null, null, 128, 8, 0);
-                    rRecipe.mCanBeBuffered = false;
-                    return rRecipe;
-                }
-                return null;
-            }
+            if (rRecipe == null)
+                return findRenamingRecipe(aInputs);
             for (ItemStack aMold : aInputs) {
                 if (ItemList.Shape_Mold_Credit.isStackEqual(aMold, false, true)) {
                     NBTTagCompound tNBT = aMold.getTagCompound();
@@ -1402,6 +1407,40 @@ public class GT_Recipe implements Comparable<GT_Recipe> {
                 }
             }
             return rRecipe;
+        }
+
+        private ItemStack findNameMoldIndex(ItemStack[] inputs) {
+            for (ItemStack stack: inputs) {
+                if (ItemList.Shape_Mold_Name.isStackEqual(stack, false, true))
+                    return stack;
+            }
+            return null;
+        }
+
+        private ItemStack findStackToRename(ItemStack[] inputs, ItemStack mold) {
+            for (ItemStack stack: inputs) {
+                if (stack == mold || stack == null)
+                    continue;
+                return stack;
+            }
+            return null;
+        }
+
+        private GT_Recipe findRenamingRecipe(ItemStack[] inputs) {
+            ItemStack mold = findNameMoldIndex(inputs);
+            if (mold == null)
+                return null;
+            ItemStack input = findStackToRename(inputs, mold);
+            if (input == null)
+                return null;
+            ItemStack output = GT_Utility.copyAmount(1, input);
+            output.setStackDisplayName(mold.getDisplayName());
+            GT_Recipe recipe = new GT_Recipe(false,
+                new ItemStack[]{ ItemList.Shape_Mold_Name.get(0), GT_Utility.copyAmount(1, input) },
+                new ItemStack[]{ output },
+                null, null, null, null, 128, 8, 0);
+            recipe.mCanBeBuffered = false;
+            return recipe;
         }
     }
 
@@ -1457,16 +1496,6 @@ public class GT_Recipe implements Comparable<GT_Recipe> {
                     rRecipe = rRecipe.copy();
                     rRecipe.mCanBeBuffered = false;
                     rRecipe.mOutputs[0].setItemDamage(tNBT.getShort("map_id"));
-                    return rRecipe;
-                }
-                if (ItemList.Paper_Punch_Card_Empty.isStackEqual(aInputs[0], false, true)) {
-                    if (!ItemList.Tool_DataStick.isStackEqual(aSpecialSlot, false, true)) return null;
-                    NBTTagCompound tNBT = aSpecialSlot.getTagCompound();
-                    if (tNBT == null || !tNBT.hasKey("GT.PunchCardData")) return null;
-
-                    rRecipe = rRecipe.copy();
-                    rRecipe.mCanBeBuffered = false;
-                    rRecipe.mOutputs[0].setTagCompound(GT_Utility.getNBTContainingString(new NBTTagCompound(), "GT.PunchCardData", tNBT.getString("GT.PunchCardData")));
                     return rRecipe;
                 }
             }

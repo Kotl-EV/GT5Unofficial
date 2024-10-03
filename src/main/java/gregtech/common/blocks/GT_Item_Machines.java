@@ -36,7 +36,7 @@ public class GT_Item_Machines
         super(par1);
         setMaxDamage(0);
         setHasSubtypes(true);
-        setCreativeTab(GregTech_API.TAB_GREGTECH);
+        setCreativeTab(GregTech_API.TAB_GREGTECH.get());
         INSTANCE = this;
     }
 
@@ -222,8 +222,7 @@ public class GT_Item_Machines
             if (tTileEntity != null) {
                 tTileEntity.setInitialValuesAsNBT(tTileEntity.isServerSide() ? aStack.getTagCompound() : null, tDamage);
                 if (aPlayer != null) {
-                    //todo daniorio
-                    tTileEntity.setOwnerName(aPlayer.getCommandSenderName());
+                    tTileEntity.setOwnerName(aPlayer.getDisplayName());
                 }
                 tTileEntity.getMetaTileEntity().initDefaultModes(aStack.getTagCompound());
                 final byte aSide = GT_Utility.getOppositeSide(side);

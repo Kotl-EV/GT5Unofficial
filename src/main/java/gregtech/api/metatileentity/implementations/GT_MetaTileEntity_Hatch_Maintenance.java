@@ -17,6 +17,8 @@ import gregtech.api.objects.GT_RenderedTexture;
 import gregtech.api.util.GT_ModHandler;
 import gregtech.api.util.GT_OreDictUnificator;
 import gregtech.api.util.GT_Utility;
+import ic2.core.IHasGui;
+import ic2.core.item.ItemToolbox;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -25,31 +27,31 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
 public class GT_MetaTileEntity_Hatch_Maintenance extends GT_MetaTileEntity_Hatch {
+
     public enum RepairMethod {
         Manual, AutoKit, FullAuto
     }
     private static final ItemStack autoRepairKit = ItemList.AutoRepairKit.get(1);
     private static final ItemStack[] oldRepairItems = new ItemStack[]{
-            ItemList.Duct_Tape.get(4),
-            GT_OreDictUnificator.get(OrePrefixes.cell, Materials.Lubricant, 2),
-            GT_OreDictUnificator.get(OrePrefixes.screw, Materials.Steel, 4),
-            GT_OreDictUnificator.get(OrePrefixes.circuit, Materials.Advanced, 2)
+        ItemList.Duct_Tape.get(4),
+        GT_OreDictUnificator.get(OrePrefixes.cell, Materials.Lubricant, 2),
+        GT_OreDictUnificator.get(OrePrefixes.screw, Materials.Steel, 4),
+        GT_OreDictUnificator.get(OrePrefixes.circuit, Materials.Advanced, 2)
     };
-
 
     public boolean mWrench = false, mScrewdriver = false, mSoftHammer = false, mHardHammer = false, mSolderingTool = false, mCrowbar = false;
 
     private final RepairMethod mMethod;
 
-    public static GT_MetaTileEntity_Hatch_Maintenance Manual (int aID, String aName, String aNameRegional, int aTier) {
+    public static GT_MetaTileEntity_Hatch_Maintenance Manual(int aID, String aName, String aNameRegional, int aTier) {
         return new GT_MetaTileEntity_Hatch_Maintenance(aID, aName, aNameRegional, aTier, RepairMethod.Manual);
     }
 
-    public static GT_MetaTileEntity_Hatch_Maintenance AutoKit (int aID, String aName, String aNameRegional, int aTier) {
+    public static GT_MetaTileEntity_Hatch_Maintenance AutoKit(int aID, String aName, String aNameRegional, int aTier) {
         return new GT_MetaTileEntity_Hatch_Maintenance(aID, aName, aNameRegional, aTier, RepairMethod.AutoKit);
     }
 
-    public static GT_MetaTileEntity_Hatch_Maintenance FullAuto (int aID, String aName, String aNameRegional, int aTier) {
+    public static GT_MetaTileEntity_Hatch_Maintenance FullAuto(int aID, String aName, String aNameRegional, int aTier) {
         return new GT_MetaTileEntity_Hatch_Maintenance(aID, aName, aNameRegional, aTier, RepairMethod.FullAuto);
     }
 
@@ -63,38 +65,46 @@ public class GT_MetaTileEntity_Hatch_Maintenance extends GT_MetaTileEntity_Hatch
         mMethod = method;
     }
 
-    public boolean isAuto () {
+    public boolean isAuto() {
         return mMethod != RepairMethod.Manual;
     }
 
-    private static int getBufferSize (RepairMethod method) {
+    private static int getBufferSize(RepairMethod method) {
         return method == RepairMethod.AutoKit ? 4 : 1;
     }
 
-    private static String getShortDescription (RepairMethod method) {
+    private static String getShortDescription(RepairMethod method) {
         switch (method) {
-            case Manual  : return "For maintaining Multiblocks";
-            case AutoKit : return "For automatically maintaining Multiblocks via repair kits";
-            case FullAuto: return "For automatically maintaining Multiblocks without repair kits";
-            default: return "";
+            case Manual:
+                return "For maintaining Multiblocks";
+            case AutoKit:
+                return "For automatically maintaining Multiblocks via repair kits";
+            case FullAuto:
+                return "For automatically maintaining Multiblocks without repair kits";
+            default:
+                return "";
         }
     }
 
-    private String getCostDescription () {
+    private String getCostDescription() {
         switch (mMethod) {
-            case Manual  : return "Cannot be shared between Multiblocks!";
-            case AutoKit : return "1 Auto Repair Kit for each autorepair";
-            case FullAuto: return "No need for maintaining!";
-            default: return "";
+            case Manual:
+                return "Cannot be shared between Multiblocks!";
+            case AutoKit:
+                return "1 Auto Repair Kit for each autorepair";
+            case FullAuto:
+                return "No need for maintaining!";
+            default:
+                return "";
         }
     }
 
     @Override
     public String[] getDescription() {
         return GT_Utility.concat(
-            mDescriptionArray,
-            getCostDescription()
-                .split("\n")
+                mDescriptionArray,
+                getCostDescription()
+                        .split("\n")
         );
     }
 
@@ -140,7 +150,9 @@ public class GT_MetaTileEntity_Hatch_Maintenance extends GT_MetaTileEntity_Hatch
 
     @Override
     public boolean onRightclick(IGregTechTileEntity aBaseMetaTileEntity, EntityPlayer aPlayer, byte aSide, float aX, float aY, float aZ) {
-        if (aBaseMetaTileEntity.isClientSide()) return true;
+        if (aBaseMetaTileEntity.isClientSide()) {
+            return true;
+        }
         if (mMethod != RepairMethod.FullAuto && aSide == aBaseMetaTileEntity.getFrontFacing()) {
             aBaseMetaTileEntity.openGUI(aPlayer);
         }
@@ -149,41 +161,48 @@ public class GT_MetaTileEntity_Hatch_Maintenance extends GT_MetaTileEntity_Hatch
 
     @Override
     public Object getServerGUI(int aID, InventoryPlayer aPlayerInventory, IGregTechTileEntity aBaseMetaTileEntity) {
-        if (isAuto()) return new GT_Container_2by2(aPlayerInventory, aBaseMetaTileEntity);
+        if (isAuto()) {
+            return new GT_Container_2by2(aPlayerInventory, aBaseMetaTileEntity);
+        }
         return new GT_Container_MaintenanceHatch(aPlayerInventory, aBaseMetaTileEntity);
     }
 
     @Override
     public Object getClientGUI(int aID, InventoryPlayer aPlayerInventory, IGregTechTileEntity aBaseMetaTileEntity) {
-        if (isAuto()) return new GT_GUIContainer_2by2(aPlayerInventory, aBaseMetaTileEntity, getLocalName());
+        if (isAuto()) {
+            return new GT_GUIContainer_2by2(aPlayerInventory, aBaseMetaTileEntity, getLocalName());
+        }
         return new GT_GUIContainer_MaintenanceHatch(aPlayerInventory, aBaseMetaTileEntity);
     }
 
     public void updateSlots() {
-        for (int i = 0; i < mInventory.length; i++)
-            if (mInventory[i] != null && mInventory[i].stackSize <= 0) mInventory[i] = null;
+        for (int i = 0; i < mInventory.length; i++) {
+            if (mInventory[i] != null && mInventory[i].stackSize <= 0) {
+                mInventory[i] = null;
+            }
+        }
     }
-    
+
     private boolean areStacksSame(ItemStack a, ItemStack b) {
         return (GT_Utility.areUnificationsEqual(a, b, true) || GT_Utility.areUnificationsEqual(GT_OreDictUnificator.get(false, a), b, true));
     }
-    
+
     private int countStack(ItemStack[] aList, ItemStack aStack) {
-        if (aStack == null) return 0;
-        
+        if (aStack == null) {
+            return 0;
+        }
+
         int count = 0;
-        
+
         for (ItemStack tStack : aList) {
             if (areStacksSame(tStack, aStack)) {
                 count += tStack.stackSize;
             }
         }
-        
+
         return count;
     }
-    
 
-    
     private void fullRepair() {
         this.mCrowbar = true;
         this.mHardHammer = true;
@@ -192,13 +211,15 @@ public class GT_MetaTileEntity_Hatch_Maintenance extends GT_MetaTileEntity_Hatch
         this.mSolderingTool = true;
         this.mWrench = true;
     }
-    
-    private void payCost (ItemStack[] repairCost) {
+
+    private void payCost(ItemStack[] repairCost) {
         for (ItemStack row : repairCost) {
-            if (row == null) continue;
-            
+            if (row == null) {
+                continue;
+            }
+
             int rowCost = row.stackSize;
-            
+
             for (ItemStack aStack : mInventory) {
                 if (areStacksSame(aStack, row)) {
                     if (aStack.stackSize < rowCost) {
@@ -215,52 +236,68 @@ public class GT_MetaTileEntity_Hatch_Maintenance extends GT_MetaTileEntity_Hatch
     }
 
     public boolean autoMaintainance() {
-        if (!isAuto()) return false;
+        if (!isAuto()) {
+            return false;
+        }
 
         if (mMethod == RepairMethod.FullAuto) {
             fullRepair();
             return true;
         }
-        
+
         if (mInventory == null) {
             return false;
         }
-        
+
         int kitsCount = countStack(mInventory, autoRepairKit);
-        
+
         if (kitsCount >= autoRepairKit.stackSize) {
-            payCost(new ItemStack[]{ autoRepairKit });
+            payCost(new ItemStack[]{autoRepairKit});
         } else {
             for (ItemStack row : oldRepairItems) {
                 int inventoryCount = countStack(mInventory, row);
-                
-                if (row.stackSize > inventoryCount) return false;
+
+                if (row.stackSize > inventoryCount) {
+                    return false;
+                }
             }
             payCost(oldRepairItems);
         }
-        
+
         fullRepair();
-        
+
         return true;
     }
 
     public void onToolClick(ItemStack aStack, EntityLivingBase aPlayer) {
-        if (aStack == null || aPlayer == null) return;
-        if (GT_Utility.isStackInList(aStack, GregTech_API.sWrenchList) && GT_ModHandler.damageOrDechargeItem(aStack, 1, 1000, aPlayer))
-            mWrench = true;
-        if (GT_Utility.isStackInList(aStack, GregTech_API.sScrewdriverList) && GT_ModHandler.damageOrDechargeItem(aStack, 1, 1000, aPlayer))
-            mScrewdriver = true;
-        if (GT_Utility.isStackInList(aStack, GregTech_API.sSoftHammerList) && GT_ModHandler.damageOrDechargeItem(aStack, 1, 1000, aPlayer))
-            mSoftHammer = true;
-        if (GT_Utility.isStackInList(aStack, GregTech_API.sHardHammerList) && GT_ModHandler.damageOrDechargeItem(aStack, 1, 1000, aPlayer))
-            mHardHammer = true;
-        if (GT_Utility.isStackInList(aStack, GregTech_API.sCrowbarList) && GT_ModHandler.damageOrDechargeItem(aStack, 1, 1000, aPlayer))
-            mCrowbar = true;
-        if (GT_ModHandler.useSolderingIron(aStack, aPlayer)) mSolderingTool = true;
+        if (aStack == null || aPlayer == null) {
+            return;
+        }
+
         if (GT_OreDictUnificator.isItemStackInstanceOf(aStack, "craftingDuctTape")) {
-            mWrench = mScrewdriver = mSoftHammer = mHardHammer = mCrowbar = mSolderingTool = true;
+            fullRepair();
             getBaseMetaTileEntity().setActive(false);
             aStack.stackSize--;
+            return;
+        }
+
+        if (GT_Utility.isStackInList(aStack, GregTech_API.sWrenchList) && GT_ModHandler.damageOrDechargeItem(aStack, 1, 1000, aPlayer)) {
+            mWrench = true;
+        }
+        if (GT_Utility.isStackInList(aStack, GregTech_API.sScrewdriverList) && GT_ModHandler.damageOrDechargeItem(aStack, 1, 1000, aPlayer)) {
+            mScrewdriver = true;
+        }
+        if (GT_Utility.isStackInList(aStack, GregTech_API.sSoftHammerList) && GT_ModHandler.damageOrDechargeItem(aStack, 1, 1000, aPlayer)) {
+            mSoftHammer = true;
+        }
+        if (GT_Utility.isStackInList(aStack, GregTech_API.sHardHammerList) && GT_ModHandler.damageOrDechargeItem(aStack, 1, 1000, aPlayer)) {
+            mHardHammer = true;
+        }
+        if (GT_Utility.isStackInList(aStack, GregTech_API.sCrowbarList) && GT_ModHandler.damageOrDechargeItem(aStack, 1, 1000, aPlayer)) {
+            mCrowbar = true;
+        }
+        if (GT_Utility.isStackInList(aStack, GregTech_API.sSolderingToolList) && GT_ModHandler.useSolderingIron(aStack, aPlayer)) {
+            mSolderingTool = true;
         }
         if (mSolderingTool && aPlayer instanceof EntityPlayerMP) {
             EntityPlayerMP tPlayer = (EntityPlayerMP) aPlayer;
@@ -269,44 +306,62 @@ public class GT_MetaTileEntity_Hatch_Maintenance extends GT_MetaTileEntity_Hatch
             } catch (Exception ignored) {
             }
         }
+
+        //click with toolbox
+        if (aStack.getItem() instanceof ItemToolbox) {
+            ItemToolbox tb = (ItemToolbox) aStack.getItem();
+            IHasGui tti = tb.getInventory((EntityPlayer) aPlayer, aStack);
+            for (int i = 0; i < tti.getSizeInventory(); i++) {
+                onToolClick(tti.getStackInSlot(i), aPlayer);
+                ItemStack is = tti.getStackInSlot(i);
+                if (is != null && is.stackSize <= 0) {
+                    tti.setInventorySlotContents(i, null);
+                }
+            }
+        }
+
     }
 
     @Override
     public boolean allowPullStack(IGregTechTileEntity aBaseMetaTileEntity, int aIndex, byte aSide, ItemStack aStack) {
-        if(!(isAuto() && GT_Mod.gregtechproxy.mAMHInteraction))
+        if (!(isAuto() && GT_Mod.gregtechproxy.mAMHInteraction)) {
             return false;
-        
-        if (isNotRepairItem(aStack))
+        }
+
+        if (isNotRepairItem(aStack)) {
             return false;
-            
+        }
+
         return isItemNotFull(aStack);
     }
 
     @Override
     public boolean allowPutStack(IGregTechTileEntity aBaseMetaTileEntity, int aIndex, byte aSide, ItemStack aStack) {
-        if(!(isAuto() && GT_Mod.gregtechproxy.mAMHInteraction))
+        if (!(isAuto() && GT_Mod.gregtechproxy.mAMHInteraction)) {
             return false;
-        
-        if (isNotRepairItem(aStack))
+        }
+
+        if (isNotRepairItem(aStack)) {
             return false;
-            
+        }
+
         return isItemNotFull(aStack);
     }
-    
+
     private boolean isNotRepairItem(ItemStack aStack) {
         if (areStacksSame(aStack, autoRepairKit)) {
             return false;
         }
-        
-        for(ItemStack nStack : oldRepairItems) {
+
+        for (ItemStack nStack : oldRepairItems) {
             if (areStacksSame(aStack, nStack)) {
                 return false;
             }
         }
         return true;
     }
-    
-    private boolean isItemNotFull (ItemStack aStack) {
+
+    private boolean isItemNotFull(ItemStack aStack) {
         return countStack(mInventory, aStack) < 64;
     }
 }

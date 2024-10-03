@@ -1,8 +1,3 @@
-// Decompiled by Jad v1.5.8g. Copyright 2001 Pavel Kouznetsov.
-// Jad home page: http://www.kpdus.com/jad.html
-// Decompiler options: packimports(3) 
-// Source File Name:   GT_Client.java
-
 package gregtech.common;
 
 import codechicken.lib.vec.Rotation;
@@ -16,7 +11,6 @@ import gregtech.api.enums.Materials;
 import gregtech.api.interfaces.tileentity.ICoverable;
 import gregtech.api.interfaces.tileentity.ITurnable;
 import gregtech.api.metatileentity.BaseMetaPipeEntity;
-import gregtech.api.metatileentity.BaseTileEntity;
 import gregtech.api.objects.GT_ItemStack;
 import gregtech.api.util.GT_Log;
 import gregtech.api.util.GT_PlayedSound;
@@ -24,8 +18,23 @@ import gregtech.api.util.GT_Recipe;
 import gregtech.api.util.GT_Utility;
 import gregtech.common.entities.GT_Entity_Arrow;
 import gregtech.common.entities.GT_Entity_Arrow_Potion;
-import gregtech.common.render.*;
+import gregtech.common.render.GT_CapeRenderer;
+import gregtech.common.render.GT_FlaskRenderer;
+import gregtech.common.render.GT_FluidDisplayStackRenderer;
+import gregtech.common.render.GT_MachineRenderer;
+import gregtech.common.render.GT_MetaGenerated_Item_Renderer;
+import gregtech.common.render.GT_MetaGenerated_Tool_Renderer;
+import gregtech.common.render.GT_Renderer_Block;
+import gregtech.common.render.GT_Renderer_Entity_Arrow;
 import ic2.api.tile.IWrenchable;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -40,14 +49,10 @@ import net.minecraftforge.event.terraingen.BiomeEvent;
 import net.minecraftforge.oredict.OreDictionary;
 import org.lwjgl.opengl.GL11;
 
-import java.net.URL;
-import java.util.*;
-
 // Referenced classes of package gregtech.common:
 //            GT_Proxy
 
-public class GT_Client extends GT_Proxy
-        implements Runnable {
+public class GT_Client extends GT_Proxy implements Runnable {
 
     private static List ROTATABLE_VANILLA_BLOCKS;
 
@@ -283,22 +288,27 @@ public class GT_Client extends GT_Proxy
     	}
     }
 
+    @Override
     public boolean isServerSide() {
         return true;
     }
 
+    @Override
     public boolean isClientSide() {
         return true;
     }
 
+    @Override
     public boolean isBukkitSide() {
         return false;
     }
 
+    @Override
     public EntityPlayer getThePlayer() {
         return Minecraft.getMinecraft().thePlayer;
     }
 
+    @Override
     public int addArmor(String aPrefix) {
         return RenderingRegistry.addNewArmourRendererPrefix(aPrefix);
     }
@@ -410,10 +420,10 @@ public class GT_Client extends GT_Proxy
             }
             ArrayList<GT_PlayedSound> tList = new ArrayList();
             for (Map.Entry<GT_PlayedSound, Integer> tEntry : GT_Utility.sPlayedSoundMap.entrySet()) {
-                if (tEntry.getValue().intValue() < 0) {//Integer -> Integer -> int? >_<, fix
+                if (tEntry.getValue() < 0) {//Integer -> Integer -> int? >_<, fix
                     tList.add(tEntry.getKey());
                 } else {
-                    tEntry.setValue(Integer.valueOf(tEntry.getValue().intValue() - 1));
+                    tEntry.setValue(tEntry.getValue() - 1);
                 }
             }
             GT_PlayedSound tKey;
@@ -474,16 +484,20 @@ public class GT_Client extends GT_Proxy
                 GT_Utility.isStackInList(aEvent.currentItem, GregTech_API.sCrowbarList) ||
                 GT_Utility.isStackInList(aEvent.currentItem, GregTech_API.sScrewdriverList))
         {
-            if (((ICoverable) aTileEntity).getCoverIDAtSide((byte) aEvent.target.sideHit) == 0)
-                for (byte i = 0; i < 6; i++)
+            boolean found = false;
+            if (((ICoverable) aTileEntity).getCoverIDAtSide((byte) aEvent.target.sideHit) == 0) {
+                for (byte i = 0; i < 6; i++) {
                     if (((ICoverable) aTileEntity).getCoverIDAtSide(i) > 0) {
                         drawGrid(aEvent, true);
-                        return;
+                        found = true;
                     }
-            return;
+                }
+                if(!found) drawGrid(aEvent, false);
+                return;
+            }
         }
 
-        if (GT_Utility.isStackInList(aEvent.currentItem, GregTech_API.sCovers.keySet()))
+        if (GT_Utility.isStackInList(aEvent.currentItem, GregTech_API.sCovers.keySet()) || GT_Utility.isItemCell(aEvent.currentItem))
         {
             if (((ICoverable) aTileEntity).getCoverIDAtSide((byte) aEvent.target.sideHit) == 0)
                 drawGrid(aEvent, true);
@@ -494,9 +508,6 @@ public class GT_Client extends GT_Proxy
     public void receiveRenderEvent(net.minecraftforge.client.event.RenderPlayerEvent.Pre aEvent) {
         if (GT_Utility.getFullInvisibility(aEvent.entityPlayer)) {
             aEvent.setCanceled(true);
-            return;
-        } else {
-            return;
         }
     }
 
@@ -596,6 +607,7 @@ public class GT_Client extends GT_Proxy
         }
     }
 
+    @Override
     public void doSonictronSound(ItemStack aStack, World aWorld, double aX, double aY, double aZ) {
         if (GT_Utility.isStackInvalid(aStack))
             return;

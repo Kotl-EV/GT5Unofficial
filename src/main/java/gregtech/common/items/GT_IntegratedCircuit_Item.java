@@ -7,21 +7,27 @@ import gregtech.api.enums.ItemList;
 import gregtech.api.enums.Materials;
 import gregtech.api.enums.OrePrefixes;
 import gregtech.api.items.GT_Generic_Item;
-import gregtech.api.util.*;
+import gregtech.api.util.GT_Config;
+import gregtech.api.util.GT_LanguageManager;
+import gregtech.api.util.GT_Log;
+import gregtech.api.util.GT_ModHandler;
+import gregtech.api.util.GT_Utility;
+import ic2.core.IHasGui;
+import ic2.core.item.ItemToolbox;
+import java.util.List;
 import net.minecraft.client.renderer.texture.IIconRegister;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.IIcon;
 import net.minecraft.world.World;
-
-import java.util.List;
 
 import static gregtech.api.enums.GT_Values.RES_PATH_ITEM;
 
 public class GT_IntegratedCircuit_Item extends GT_Generic_Item {
+
     private final static String aTextEmptyRow = "   ";
     protected IIcon[] mIconDamage = new IIcon[25];
 
@@ -31,7 +37,6 @@ public class GT_IntegratedCircuit_Item extends GT_Generic_Item {
         setMaxDamage(0);
 
         ItemList.Circuit_Integrated.set(this);
-
 
         GT_ModHandler.addShapelessCraftingRecipe(ItemList.Circuit_Integrated.getWithDamage(1L, 0L), GT_ModHandler.RecipeBits.NOT_REMOVABLE, new Object[]{OrePrefixes.circuit.get(Materials.Basic)});
         long bits = GT_ModHandler.RecipeBits.BUFFERED | GT_ModHandler.RecipeBits.NOT_REMOVABLE;
@@ -85,8 +90,8 @@ public class GT_IntegratedCircuit_Item extends GT_Generic_Item {
     public void addAdditionalToolTips(List aList, ItemStack aStack, EntityPlayer aPlayer) {
         super.addAdditionalToolTips(aList, aStack, aPlayer);
         aList.add(GT_LanguageManager.addStringLocalization(new StringBuilder().append(getUnlocalizedName()).append(".configuration").toString(), "Configuration: ") + getConfigurationString(getDamage(aStack)));
-        aList.add(GT_LanguageManager.addStringLocalization("gt.behaviour.Integrated1", "Rightclick to set number (+1)"));
-        aList.add(GT_LanguageManager.addStringLocalization("gt.behaviour.Integrated2", "Rightclick + Shift to set number (-1)"));
+        aList.add(GT_LanguageManager.addStringLocalization("gt.behaviour.Integrated2", "Rightclick to set number [+1] (requires screwdriver in your inventory)"));
+        aList.add(GT_LanguageManager.addStringLocalization("gt.behaviour.Integrated3", "Rightclick + Shift to set number [-1] (requires screwdriver in your inventory)"));
     }
 
     public String getUnlocalizedName(ItemStack aStack) {
@@ -95,19 +100,23 @@ public class GT_IntegratedCircuit_Item extends GT_Generic_Item {
 
     @Override
     public ItemStack onItemRightClick(ItemStack aStack, World aWorld, EntityPlayer aPlayer) {
-        if (aWorld.isRemote || !useScrewdriver(aPlayer))
+        if (aWorld.isRemote || !useScrewdriver(aPlayer)) {
             return super.onItemRightClick(aStack, aWorld, aPlayer);
+        }
         int tConfig = getDamage(aStack);
-        if (aPlayer.isSneaking())
+        if (aPlayer.isSneaking()) {
             tConfig--;
-        else
+        } else {
             tConfig++;
-        if (tConfig < 0)
-            tConfig += 24;
-        if (tConfig > 24)
-            tConfig -= 24;
+        }
+        if (tConfig < 0) {
+            tConfig += 25;
+        }
+        if (tConfig > 24) {
+            tConfig -= 25;
+        }
         aStack.setItemDamage(tConfig);
-        GT_Utility.sendChatToPlayer(aPlayer, "Integrated Circuit config is: " + tConfig);
+        aPlayer.addChatComponentMessage(new ChatComponentTranslation("Interaction_DESCRIPTION_Index_217", tConfig));
         return super.onItemRightClick(aStack, aWorld, aPlayer);
     }
 
@@ -123,6 +132,20 @@ public class GT_IntegratedCircuit_Item extends GT_Generic_Item {
                     mainInventory[i] = null;
                 }
                 return true;
+            }
+            //also check inside toolbox
+            if (aStack != null && aStack.getItem() instanceof ItemToolbox) {
+                ItemToolbox itb = (ItemToolbox) aStack.getItem();
+                IHasGui tbi = itb.getInventory((EntityPlayer) aPlayer, aStack);
+                for (int j = 0; j < tbi.getSizeInventory(); j++) {
+                    ItemStack is = tbi.getStackInSlot(j);
+                    if (is != null && GT_Utility.isStackInList(is, GregTech_API.sScrewdriverList) && GT_ModHandler.damageOrDechargeItem(is, 1, 1000, aPlayer)) {
+                        if (is.stackSize <= 0) {
+                            tbi.setInventorySlotContents(j, null);
+                        }
+                        return true;
+                    }
+                }
             }
         }
         return false;

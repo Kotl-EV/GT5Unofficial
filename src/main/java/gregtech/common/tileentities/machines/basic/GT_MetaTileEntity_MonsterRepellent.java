@@ -8,11 +8,10 @@ import gregtech.api.metatileentity.implementations.GT_MetaTileEntity_TieredMachi
 import gregtech.api.objects.GT_RenderedTexture;
 import gregtech.api.util.GT_SpawnEventHandler;
 import gregtech.api.util.GT_Utility;
+import java.util.Arrays;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.entity.player.EntityPlayer;
-
-import java.util.Arrays;
 
 import static gregtech.api.enums.GT_Values.V;
 
@@ -40,6 +39,7 @@ public class GT_MetaTileEntity_MonsterRepellent extends GT_MetaTileEntity_Tiered
         super(aName, aTier, aInvSlotCount, aDescription, aTextures);
     }
 
+    @Override
     public IMetaTileEntity newMetaEntity(IGregTechTileEntity aTileEntity) {
         return new GT_MetaTileEntity_MonsterRepellent(this.mName, this.mTier, this.mInventory.length, this.mDescriptionArray, this.mTextures);
     }
@@ -82,12 +82,11 @@ public class GT_MetaTileEntity_MonsterRepellent extends GT_MetaTileEntity_Tiered
     @Override
     public void onScrewdriverRightClick(byte aSide, EntityPlayer aPlayer, float aX, float aY, float aZ) {
 
-            int newRepMode = repMode.ordinal();
+            int newRepMode;
 
             if (aPlayer.isSneaking())
             {
                 newRepMode = repMode.ordinal() - 1;
-
             }
             else {
                 newRepMode = repMode.ordinal() + 1;
@@ -101,7 +100,7 @@ public class GT_MetaTileEntity_MonsterRepellent extends GT_MetaTileEntity_Tiered
 
             repMode = repellationMode.values()[newRepMode];
 
-            String localizationIndex = "217";
+            String localizationIndex = "240";
             String unlocalizedMessage = "Prevents spawn of hostile creatures";
 
             switch (repMode){
@@ -111,13 +110,13 @@ public class GT_MetaTileEntity_MonsterRepellent extends GT_MetaTileEntity_Tiered
                 }
                 case HOSTILES_NEUTRALS:
                 {
-                    localizationIndex = "218";
+                    localizationIndex = "241";
                     unlocalizedMessage = "Prevents spawn of hostile and neutral creatures(except animals and pets)";
                     break;
                 }
                 case EVERYONE:
                 {
-                    localizationIndex = "219";
+                    localizationIndex = "242";
                     unlocalizedMessage = "Prevents spawn of any living creature(except players and their pets)";
                     break;
                 }

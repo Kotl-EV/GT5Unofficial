@@ -9,7 +9,7 @@ buildscript {
         maven {
             // GTNH ForgeGradle Fork
             name = "GTNH Maven"
-            url = "http://jenkins.usrv.eu:8081/nexus/content/groups/public/"
+            url = "https://nexus.gtnewhorizons.com/repository/public/"
         }
         maven {
             name 'sonatype'
@@ -21,8 +21,12 @@ buildscript {
         }
     }
     dependencies {
-         classpath 'net.minecraftforge.gradle:ForgeGradle:1.2.11'
+         classpath 'net.minecraftforge.gradle:ForgeGradle:1.2.13'
     }
+}
+
+plugins {
+  id 'maven-publish'
 }
 
 apply plugin: 'forge'
@@ -38,9 +42,9 @@ file "build.properties" withReader {
 }
 
 
-version = "${config.gt.version}"
-group = "GT_II-edition"
-archivesBaseName = "GT_II-edition"
+version = "1.19.2b-SNAPSHOT"
+group = "idealindustrial"
+archivesBaseName = "gt-ii-edition"
 
 compileJava {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -70,10 +74,10 @@ repositories {
         name = "chickenbones"
         url = "http://chickenbones.net/maven/"
     }
-    maven {
-        name = "ic2, forestry"
-        url = "https://maven.ic2.player.to/"
-    }
+//    maven {
+//        name = "ic2, forestry"
+//        url = "https://maven2.ic2.player.to/"
+//    }
     maven { // EnderIO & EnderCore
         name = 'tterrag Repo'
         url = "http://maven.tterrag.com"
@@ -82,9 +86,9 @@ repositories {
         name = 'DVS1 Maven FS'
         url = 'http://dvs1.progwml6.com/files/maven'
     }
-    maven { // AppleCore
-        url = "https://www.ryanliptak.com/maven/"
-    }
+//    maven { // AppleCore
+//        url = "https://www.ryanliptak.com/maven/"
+//    }
     maven { // GalacticGreg, YAMCore,..
         name = 'UsrvDE'
         url = "http://jenkins.usrv.eu:8081/nexus/content/repositories/releases/"
@@ -106,6 +110,11 @@ dependencies {
 
 processResources
 {
+	def propertiesFile = file "src/main/resources/version.properties"
+	def properties = new Properties()
+	properties.setProperty("version", project.version)
+	propertiesFile.withWriter { properties.store(it, null) }
+		
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
@@ -158,4 +167,27 @@ task resolveAllDependencies {
 
 artifacts {
     archives devJar
+}
+
+tasks.withType(PublishToMavenRepository) {
+	dependsOn(tasks.assemble)
+}
+
+publishing {
+  repositories {
+    maven {
+      name = "GitHubPackages"
+      url = "https://maven.pkg.github.com/IdealIndustrial/GT5Unofficial"
+      credentials {
+        username = System.getenv("GITHUB_ACTOR")
+        password = System.getenv("GITHUB_TOKEN")
+      }
+    }
+  }
+  publications {
+	mavenJava(MavenPublication){
+		artifactId archivesBaseName
+		artifact jar
+	}
+}
 }
